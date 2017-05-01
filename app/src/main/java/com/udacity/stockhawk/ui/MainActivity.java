@@ -27,6 +27,8 @@ import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 
+import java.util.Date;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         SwipeRefreshLayout.OnRefreshListener,
         StockAdapter.StockAdapterOnClickHandler {
 
+    private static final int OLD_DATA_THRESHOLD = 24 * 60 * 60 * 1000;
     private static final int STOCK_LOADER = 0;
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
@@ -47,11 +50,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView error;
     private StockAdapter adapter;
 
-    private BroadcastReceiver symbolNotFoundReceived = new BroadcastReceiver() {
+    private BroadcastReceiver syncBroadcastReceived = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String symbol = intent.getStringExtra(Contract.Quote.COLUMN_SYMBOL);
-            Toast.makeText(MainActivity.this, getString(R.string.error_symbol_not_found, symbol), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, getString(R.string.toast_symbol_not_found, symbol), Toast.LENGTH_SHORT).show();
             PrefUtils.removeStock(MainActivity.this, symbol);
         }
     };
@@ -68,13 +71,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onResume() {
         IntentFilter intentFilter = new IntentFilter(QuoteSyncJob.ACTION_SYMBOL_NOT_FOUND);
-        this.registerReceiver(symbolNotFoundReceived, intentFilter);
+        this.registerReceiver(syncBroadcastReceived, intentFilter);
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        unregisterReceiver(symbolNotFoundReceived);
+        unregisterReceiver(syncBroadcastReceived);
         super.onPause();
     }
 
@@ -109,8 +112,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
             }
         }).attachToRecyclerView(stockRecyclerView);
-
-
     }
 
     private boolean networkUp() {
@@ -174,6 +175,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
+
+            if (!networkUp()) {
+                //check how old is our data
+                long lastUpdateTime = PrefUtils.getLastUpdateDate(this);
+                if (lastUpdateTime > 0 && new Date().getTime() - lastUpdateTime > OLD_DATA_THRESHOLD) {
+                    //Display message in case the data is too old
+                    Toast.makeText(this, R.string.toast_outdated, Toast.LENGTH_LONG).show();
+                }
+            }
         }
         adapter.setCursor(data);
     }

@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import com.udacity.stockhawk.R;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -88,4 +89,17 @@ public final class PrefUtils {
         editor.apply();
     }
 
+    public static long getLastUpdateDate(Context context) {
+        String key = context.getString(R.string.pref_last_update_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getLong(key, 0);
+    }
+
+    public static void setLastUpdateDate(Context context, Date date) {
+        String key = context.getString(R.string.pref_last_update_key);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong(key, date.getTime());
+        editor.apply();
+    }
 }
