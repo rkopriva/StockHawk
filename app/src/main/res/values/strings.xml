@@ -35,4 +35,8 @@
     <!-- Float button content description -->
     <string name="add_stock">Add Stock</string>
 
+    <!-- History title -->
+    <string name="history">History</string>
+    <string name="error_symbol_not_found">Symbol %1$s was not found</string>
+
 </resources>

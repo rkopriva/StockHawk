@@ -1,6 +1,9 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -44,9 +47,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView error;
     private StockAdapter adapter;
 
+    private BroadcastReceiver symbolNotFoundReceived = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String symbol = intent.getStringExtra(Contract.Quote.COLUMN_SYMBOL);
+            Toast.makeText(MainActivity.this, getString(R.string.error_symbol_not_found, symbol), Toast.LENGTH_SHORT).show();
+            PrefUtils.removeStock(MainActivity.this, symbol);
+        }
+    };
+
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+        Intent intent = new Intent(this, StockDetailActivity.class);
+        intent.putExtra(Contract.Quote.COLUMN_SYMBOL, symbol);
+        startActivity(intent);
+        super.onResume();
+    }
+
+    @Override
+    protected void onResume() {
+        IntentFilter intentFilter = new IntentFilter(QuoteSyncJob.ACTION_SYMBOL_NOT_FOUND);
+        this.registerReceiver(symbolNotFoundReceived, intentFilter);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(symbolNotFoundReceived);
+        super.onPause();
     }
 
     @Override
