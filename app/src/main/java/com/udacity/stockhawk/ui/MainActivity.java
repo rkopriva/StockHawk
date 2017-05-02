@@ -221,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             PrefUtils.toggleDisplayMode(this);
             setDisplayModeMenuItemIcon(item);
             adapter.notifyDataSetChanged();
+            //following lines will trigger widget update
+            Intent dataUpdatedIntent = new Intent(QuoteSyncJob.ACTION_DATA_UPDATED);
+            sendBroadcast(dataUpdatedIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

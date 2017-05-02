@@ -41,5 +41,7 @@
     <string name="history">History</string>
     <string name="toast_symbol_not_found">Symbol %s was not found</string>
     <string name="toast_outdated">The displayed data might be outdated. Please connect to the Internet in order to load fresh data.</string>
+    <string name="empty_symbols_list">Please add symbols</string>
+    <string name="widget_title">Stocks Widget</string>
 
 </resources>
