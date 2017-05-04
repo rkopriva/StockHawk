@@ -76,6 +76,10 @@ public final class QuoteSyncJob {
                 String symbol = iterator.next();
 
                 Stock stock = quotes.get(symbol);
+                if (stock == null) {
+                    Timber.e("Stock object is null for symbol %s", symbol);
+                    continue;
+                }
                 if (stock.getName() == null) {
                     PrefUtils.removeStock(context, symbol);
                     Intent symbolNotFoundIntent = new Intent(ACTION_SYMBOL_NOT_FOUND);
